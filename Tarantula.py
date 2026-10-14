@@ -59,44 +59,42 @@ ADMIN_PATHS = [
     "/dashboard", "/cpanel",
 ]
 
-# Real tarantula ASCII art (50 columns wide, 19 lines)
-SPIDER_ART = r'''
-                              .-
-        -:.                   +*
-        -=*+-.     .-===:    +%.
-           -+**=: :%@@@@@+ .*@-
-              :#@#*%@@@@@%:*@+ :-=+===-==--.
-                -#@#@@@@@@@@#=#%#=:::-:::::.
- .::-====+++***%#*#%@@@@@@@@@@#=:.
-.==----:-:::::--+#%@@@@@@%%@@@%@@@%*++:
-              .+%@%*#@@@@@@@@@@%@@*=-+**+-
-            .#@+=-.:%@+@#*##+-@*.=*#*: .-+++=.
-          .*%=.  ..:@% +@-.::.-@-   =#*.   :=**=.
-        .+#+   ... -@=  *% ..  :@-    +%=     .-=
-      .*#=         *@   :@:     -@:    :*#:
-     =#=          .@+    @*      =#      =%#.
-    :+            -@.    ==                +%=
-                  %#                        :+
-                 -@-
-                 #%
-                 =-
-'''
-
 
 def say(message: str = "") -> None:
     print(message)
 
 
 def banner() -> None:
-    """Display the TARANTULA red-and-white terminal banner."""
+    """Display a clearly spider-shaped TARANTULA terminal banner."""
     red = "\033[91m"
     white = "\033[97m"
     gray = "\033[90m"
     bold = "\033[1m"
     reset = "\033[0m"
 
+    # Eight distinct legs, two body sections, and visible fangs/pedipalps.
+    spider = r"""
+                     /\                       /\\
+                    /  \                     /  \\
+              _____/    \                   /    \_____
+             /     \     \                 /     /     \\
+            /       \     \               /     /       \\
+           /         \     \             /     /         \\
+          /           \     .-----------.     /           \\
+         /             \  .'  .-------.  '.  /             \\
+        /               \/   /  .---.  \   \/               \\
+        \               /   |  ( o o )  |   \               /
+         \             /    |   \_^_/   |    \             /
+          \           /      \  .---.  /      \           /
+           \         /        '-------'        \         /
+            \_______/             ||             \_______/
+                 \                ||                /
+                  \               ||               /
+                   \_____________====_____________/
+"""
+
     print("\033[2J\033[H", end="")
-    print(red + bold + SPIDER_ART + reset)
+    print(red + bold + spider + reset)
     print(red + bold + "  ╔══════════════════════════════════════════════════════╗" + reset)
     print(red + bold + "  ║                    T A R A N T U L A                 ║" + reset)
     print(red + bold + "  ╚══════════════════════════════════════════════════════╝" + reset)
