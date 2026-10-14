@@ -1,22 +1,30 @@
-# Nijat Ethical ⚓
+# TARANTULA 🕷️
 
-**A Python-based Cybersecurity Reconnaissance Toolkit**
+**A Python-based reconnaissance toolkit for the information-gathering phase of authorized security assessments.**
 
-GRAY MASK is a command-line tool designed for learning cybersecurity fundamentals and performing basic reconnaissance on authorized targets.
+TARANTULA is a command-line tool I built to learn cybersecurity fundamentals. It automates common reconnaissance tasks such as DNS and WHOIS lookups, passive subdomain discovery, port checks, HTTP header analysis, and TLS inspection.
+
+> **For authorized testing only.** Use it only on systems you own or have explicit written permission to assess.
+
+<!-- Add a screenshot of the banner and menu here:
+![TARANTULA screenshot](screenshots/tarantula.png)
+-->
 
 ## Features
 
-1. **DNS Lookup** — Retrieve common DNS records.
-2. **WHOIS Lookup** — Retrieve domain registration information.
-3. **GeoIP Lookup** — View approximate public IP geolocation data.
-4. **TCP Port Scanner** — Check a limited list of common TCP ports.
-5. **HTTP Header Inspector** — Inspect HTTP response headers.
-6. **IP Locator** — Retrieve approximate IP geolocation information.
-7. **Robots.txt Viewer** — Retrieve a website's `robots.txt` file.
-8. **Email Gathering** — Find publicly visible email addresses on a website.
-9. **Subdomain Discovery** — Search public Certificate Transparency records.
-10. **Admin Login Path Check** — Check common login paths using ordinary HTTP requests.
-11. **Exit** — Close the application.
+| #  | Module | Description |
+|----|--------|-------------|
+| 1  | **DNS Lookup** | Retrieve common DNS records (A, AAAA, MX, NS, TXT, CNAME). |
+| 2  | **WHOIS Lookup** | Retrieve domain registration information. |
+| 3  | **GeoIP Lookup** | View approximate network/hosting location of an IP address. |
+| 4  | **TCP Port Scanner** | Check a limited list of common TCP ports (asks for authorization confirmation). |
+| 5  | **HTTP Header Inspector** | Inspect HTTP response headers and redirects. |
+| 6  | **TLS/SSL Certificate Checker** | Validate the certificate chain and show expiry, issuer, and TLS version. |
+| 7  | **robots.txt Viewer** | Retrieve a website's `robots.txt` file. |
+| 8  | **Public Email Gathering** | Find publicly visible email addresses (same host, limited crawl). |
+| 9  | **Passive Subdomain Discovery** | Search public Certificate Transparency logs via crt.sh. |
+| 10 | **Admin Login Path Check** | Check common login paths with ordinary GET requests (asks for authorization confirmation). |
+| 11 | **Exit** | Close the application. |
 
 ## Requirements
 
@@ -26,32 +34,25 @@ GRAY MASK is a command-line tool designed for learning cybersecurity fundamental
 
 ## Installation
 
-Clone the repository:
-
 ```bash
-git clone YOUR_GITHUB_REPOSITORY_URL
-cd YOUR_PROJECT_FOLDER
-```
-
-Install dependencies:
-
-```bash
-python -m pip install -r requirements.txt
+git clone https://github.com/NijatEthical/Tarantula.git
+cd Tarantula
+python3 -m venv venv
+source venv/bin/activate
+python3 -m pip install -r requirements.txt
 ```
 
 ## Usage
 
-Run the application:
-
 ```bash
-python Tarantula.py.py
+python3 Tarantula.py
 ```
 
-Choose an option from the interactive terminal menu.
+Choose an option from the interactive terminal menu and follow the prompts.
 
 ## Responsible Use
 
-GRAY MASK is intended for educational purposes and authorized security assessments.
+TARANTULA is intended for educational purposes and authorized security assessments.
 
 - Only test systems you own or have explicit permission to assess.
 - Respect hosting-provider policies and applicable laws.
@@ -61,15 +62,14 @@ GRAY MASK is intended for educational purposes and authorized security assessmen
 
 ## Limitations
 
-This project provides basic reconnaissance features. Results may be incomplete or affected by network restrictions, DNS configuration, rate limits, and hosting-provider policies.
+This project provides basic reconnaissance features only. Results may be incomplete or affected by network restrictions, DNS configuration, rate limits, and hosting-provider policies. It only sends ordinary requests: it does not exploit vulnerabilities, attempt logins, or test passwords.
 
-The tool is an educational project, not a replacement for a professional security assessment.
+It is an educational project, not a replacement for professional tools (such as Nmap) or a professional security assessment.
 
 ## Technologies
 
 - Python
 - Requests
-- Rich
 - dnspython
 - python-whois
 
@@ -79,5 +79,5 @@ The author is not responsible for misuse of this software. Users are responsible
 
 ## Author
 
-**Project:** Nijat Ethical 
+**Nijat** — [GitHub: NijatEthical](https://github.com/NijatEthical)
 **Category:** Cybersecurity / Python / Reconnaissance
