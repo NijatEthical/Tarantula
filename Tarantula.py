@@ -129,31 +129,31 @@ def menu() -> None:
     print(gray + "  " + "─" * 58 + reset)
 
 
-def ask_target(prompt: str = "Domeni daxil edin (məs. example.com): ") -> str | None:
+def ask_target(prompt: str = "Enter the domain (e.g. example.com): ") -> str | None:
     raw = input(prompt).strip()
     if not raw:
-        say("Xəta: domen/IP boş ola bilməz.")
+        say("Error: the domain/IP cannot be empty.")
         return None
     candidate = raw if "://" in raw else "https://" + raw
     parsed = urlparse(candidate)
     host = parsed.hostname
     if not host:
-        say("Xəta: domen/IP formatı düzgün deyil.")
+        say("Error: invalid domain/IP format.")
         return None
     # Prevent path/query from being treated as part of the host.
     return host.strip().rstrip(".")
 
 
-def ask_base_url(prompt: str = "Sayt ünvanını daxil edin (məs. https://example.com): ") -> str | None:
+def ask_base_url(prompt: str = "Enter the site address (e.g. https://example.com): ") -> str | None:
     raw = input(prompt).strip()
     if not raw:
-        say("Xəta: ünvan boş ola bilməz.")
+        say("Error: the address cannot be empty.")
         return None
     if "://" not in raw:
         raw = "https://" + raw
     parsed = urlparse(raw)
     if parsed.scheme not in ("http", "https") or not parsed.hostname:
-        say("Xəta: yalnız düzgün HTTP/HTTPS URL daxil edin.")
+        say("Error: please enter a valid HTTP/HTTPS URL.")
         return None
     # Keep host and optional port, discard credentials/fragments.
     netloc = parsed.netloc.rsplit("@", 1)[-1]
@@ -162,10 +162,10 @@ def ask_base_url(prompt: str = "Sayt ünvanını daxil edin (məs. https://examp
 
 
 def confirm_authorization() -> bool:
-    say("\nBu yoxlamaları yalnız özünüzə məxsus və ya yazılı icazə aldığınız sistemdə aparın.")
-    answer = input("Davam etmək üçün YES yazın: ").strip().casefold()
+    say("\nRun these checks only on systems you own or have written permission to test.")
+    answer = input("Type YES to continue: ").strip().casefold()
     if answer not in {"yes", "y"}:
-        say("Əməliyyat ləğv edildi.")
+        say("Operation cancelled.")
         return False
     return True
 
@@ -181,12 +181,12 @@ def dns_lookup() -> None:
     if not host:
         return
     if dns is None:
-        say("DNS modulu üçün dnspython quraşdırın: pip install dnspython")
+        say("Install dnspython for the DNS module: pip install dnspython")
         return
     resolver = dns.resolver.Resolver()
     resolver.timeout = 3
     resolver.lifetime = 5
-    print(f"\nDNS nəticələri: {host}")
+    print(f"\nDNS results: {host}")
     for record_type in ("A", "AAAA", "MX", "NS", "TXT", "CNAME"):
         try:
             answers = resolver.resolve(host, record_type)
@@ -194,12 +194,12 @@ def dns_lookup() -> None:
             for answer in answers:
                 print(f"  {answer.to_text()}")
         except dns.resolver.NoAnswer:
-            print(f"\n{record_type}: qeyd tapılmadı.")
+            print(f"\n{record_type}: no record found.")
         except dns.resolver.NXDOMAIN:
-            print(f"\nDomen mövcud deyil (NXDOMAIN): {host}")
+            print(f"\nDomain does not exist (NXDOMAIN): {host}")
             return
         except (dns.resolver.NoNameservers, dns.resolver.LifetimeTimeout, dns.exception.DNSException) as exc:
-            print(f"\n{record_type}: DNS sorğusu alınmadı ({type(exc).__name__}).")
+            print(f"\n{record_type}: DNS query failed ({type(exc).__name__}).")
 
 
 def whois_lookup() -> None:
@@ -207,13 +207,13 @@ def whois_lookup() -> None:
     if not host:
         return
     if whois is None:
-        say("WHOIS modulu üçün python-whois quraşdırın: pip install python-whois")
+        say("Install python-whois for the WHOIS module: pip install python-whois")
         return
     try:
         result = whois.whois(host)
-        print(f"\nWHOIS nəticələri: {host}")
+        print(f"\nWHOIS results: {host}")
         if not result:
-            say("WHOIS xidməti məlumat qaytarmadı.")
+            say("The WHOIS service returned no data.")
             return
         for key in ("domain_name", "registrar", "creation_date", "expiration_date",
                     "updated_date", "name_servers", "status", "emails"):
@@ -221,24 +221,24 @@ def whois_lookup() -> None:
             if value:
                 print(f"{key}: {value}")
     except Exception as exc:
-        say(f"WHOIS sorğusu alınmadı: {exc}")
+        say(f"WHOIS query failed: {exc}")
 
 
 def geoip_lookup() -> None:
-    raw = input("IP ünvanı daxil edin (boş buraxsanız domen soruşulacaq): ").strip()
+    raw = input("Enter an IP address (leave blank to be asked for a domain): ").strip()
     if not raw:
-        raw = ask_target("Domen daxil edin: ")
+        raw = ask_target("Enter the domain: ")
         if not raw:
             return
         try:
             raw = socket.gethostbyname(raw)
         except OSError as exc:
-            say(f"Domen IP-yə çevrilmədi: {exc}")
+            say(f"The domain could not be resolved to an IP address: {exc}")
             return
     try:
         ipaddress.ip_address(raw)
     except ValueError:
-        say("Xəta: düzgün IPv4 və ya IPv6 ünvanı daxil edin.")
+        say("Error: please enter a valid IPv4 or IPv6 address.")
         return
     try:
         response = make_session().get(
@@ -249,16 +249,16 @@ def geoip_lookup() -> None:
         response.raise_for_status()
         data = response.json()
         if data.get("status") != "success":
-            say(f"GeoIP sorğusu uğursuz oldu: {data.get('message', 'naməlum səbəb')}")
+            say(f"GeoIP query failed: {data.get('message', 'unknown reason')}")
             return
-        print("\nGeoIP nəticələri (təxmini şəbəkə/hostinq yeri):")
+        print("\nGeoIP results (approximate network/hosting location):")
         for key in ("query", "country", "regionName", "city", "zip", "lat", "lon",
                     "timezone", "isp", "org", "as"):
             if data.get(key) not in (None, ""):
                 print(f"{key}: {data[key]}")
-        say("Qeyd: bu, istifadəçinin və ya sayt ziyarətçilərinin dəqiq yerini göstərmir.")
+        say("Note: this does not show the exact location of a user or of a site's visitors.")
     except (requests.RequestException, ValueError) as exc:
-        say(f"GeoIP xidməti ilə əlaqə alınmadı: {exc}")
+        say(f"Could not reach the GeoIP service: {exc}")
 
 
 def tcp_port_scan() -> None:
@@ -267,18 +267,18 @@ def tcp_port_scan() -> None:
     host = ask_target()
     if not host:
         return
-    print(f"\n{host} üçün seçilmiş TCP portları yoxlanılır...")
+    print(f"\nChecking selected TCP ports on {host}...")
     try:
         addresses = socket.getaddrinfo(host, None, type=socket.SOCK_STREAM)
         unique_ips = sorted({item[4][0] for item in addresses})
     except OSError as exc:
-        say(f"Domen həll edilmədi: {exc}")
+        say(f"Could not resolve the domain: {exc}")
         return
     if not unique_ips:
-        say("IP ünvanı tapılmadı.")
+        say("No IP address found.")
         return
-    say("Həll edilmiş IP ünvanları: " + ", ".join(unique_ips))
-    say("Paylaşılan hostinqdə IP başqa müştərilərlə ortaq ola bilər.")
+    say("Resolved IP addresses: " + ", ".join(unique_ips))
+    say("Note: on shared hosting, the IP address may be shared with other customers.")
     for ip in unique_ips[:2]:
         print(f"\nIP: {ip}")
         for port, service in COMMON_PORTS.items():
@@ -292,7 +292,7 @@ def tcp_port_scan() -> None:
                 pass
             finally:
                 sock.close()
-    say("Qeyd: açıq port təkbaşına zəiflik demək deyil. Provayder qaydalarına əməl edin.")
+    say("Note: an open port alone does not mean a vulnerability. Follow the provider's rules.")
 
 
 def http_header_inspector() -> None:
@@ -301,21 +301,21 @@ def http_header_inspector() -> None:
         return
     try:
         response = make_session().get(url, timeout=HTTP_TIMEOUT, allow_redirects=True)
-        print(f"\nSoruşulan URL: {url}")
-        print(f"Yekun URL: {response.url}")
+        print(f"\nRequested URL: {url}")
+        print(f"Final URL: {response.url}")
         print(f"HTTP status: {response.status_code}")
-        print("Cavab başlıqları:")
+        print("Response headers:")
         for key, value in response.headers.items():
             print(f"  {key}: {value}")
         if response.status_code >= 400:
-            say("Qeyd: server HTTP xəta statusu qaytardı.")
-        say("Qeyd: təkcə başlıqlar əsasında saytın təhlükəsizliyi barədə qəti nəticə çıxarmaq olmaz.")
+            say("Note: the server returned an HTTP error status.")
+        say("Note: headers alone are not enough to draw firm conclusions about a site's security.")
     except requests.RequestException as exc:
-        say(f"HTTP sorğusu uğursuz oldu: {exc}")
+        say(f"HTTP request failed: {exc}")
 
 
 def tls_ssl_check() -> None:
-    host = ask_target("Domen daxil edin (məs. example.com): ")
+    host = ask_target("Enter the domain (e.g. example.com): ")
     if not host:
         return
     try:
@@ -333,38 +333,38 @@ def tls_ssl_check() -> None:
         now = datetime.now(timezone.utc)
         not_before = parse_cert_time(cert["notBefore"])
         not_after = parse_cert_time(cert["notAfter"])
-        print("\n--- TLS/SSL Sertifikat Yoxlaması ---")
-        print(f"Domen: {host}")
-        print(f"TLS versiyası: {tls_version or 'məlumat yoxdur'}")
-        print(f"Şifrləmə: {cipher[0]} ({cipher[2]} bit)" if cipher else "Şifrləmə: məlumat yoxdur")
-        print("Sertifikat zənciri və domen adı: uğurla yoxlanıldı")
-        print(f"Etibarlılığın başlanğıcı (UTC): {not_before.isoformat()}")
-        print(f"Etibarlılığın bitmə tarixi (UTC): {not_after.isoformat()}")
+        print("\n--- TLS/SSL Certificate Check ---")
+        print(f"Domain: {host}")
+        print(f"TLS version: {tls_version or 'not available'}")
+        print(f"Cipher: {cipher[0]} ({cipher[2]} bits)" if cipher else "Cipher: not available")
+        print("Certificate chain and hostname: verified successfully")
+        print(f"Valid from (UTC): {not_before.isoformat()}")
+        print(f"Valid until (UTC): {not_after.isoformat()}")
         if now < not_before:
-            print("Status: sertifikat hələ qüvvəyə minməyib.")
+            print("Status: the certificate is not yet valid.")
         elif now > not_after:
-            print("Status: sertifikatın müddəti bitib.")
+            print("Status: the certificate has expired.")
         else:
             days_left = (not_after - now).days
-            print(f"Status: etibarlıdır; təxminən {days_left} gün qalıb.")
+            print(f"Status: valid; about {days_left} days remaining.")
         issuer = cert.get("issuer", ())
         issuer_text = ", ".join(f"{key}={value}" for group in issuer for key, value in group)
-        print(f"Sertifikatı verən: {issuer_text or 'məlumat yoxdur'}")
+        print(f"Issuer: {issuer_text or 'not available'}")
         sans = [value for kind, value in cert.get("subjectAltName", ()) if kind == "DNS"]
         if sans:
-            print("Sertifikatdakı domen adları:")
+            print("Domain names in the certificate:")
             for name in sans[:12]:
                 print(f"  - {name}")
-        say("Qeyd: bu yoxlama TLS-in bütün konfiqurasiyasını və saytın ümumi təhlükəsizliyini audit etmir.")
+        say("Note: this check does not audit the full TLS configuration or the overall security of the site.")
     except ssl.SSLCertVerificationError as exc:
-        say(f"TLS sertifikatının etibarlılıq yoxlaması uğursuz oldu: {exc}")
-        say("Səbəb domen uyğunsuzluğu, etibarsız sertifikat zənciri və ya tarix problemi ola bilər.")
+        say(f"TLS certificate validation failed: {exc}")
+        say("The cause may be a hostname mismatch, an untrusted certificate chain, or a date problem.")
     except (socket.timeout, TimeoutError):
-        say("Xəta: serverə qoşulma vaxtı bitdi.")
+        say("Error: the connection to the server timed out.")
     except ConnectionRefusedError:
-        say("Xəta: server 443 portunda HTTPS bağlantısını qəbul etmədi.")
+        say("Error: the server refused the HTTPS connection on port 443.")
     except (OSError, ssl.SSLError, KeyError, ValueError) as exc:
-        say(f"TLS/SSL yoxlaması alınmadı: {exc}")
+        say(f"TLS/SSL check failed: {exc}")
 
 
 def robots_txt() -> None:
@@ -379,12 +379,12 @@ def robots_txt() -> None:
         print(f"HTTP status: {response.status_code}")
         if response.status_code == 200:
             print("\n--- robots.txt ---")
-            print(response.text[:20000] or "(fayl boşdur)")
+            print(response.text[:20000] or "(file is empty)")
         else:
-            say("robots.txt tapılmadı və ya server uğurlu cavab qaytarmadı.")
-        say("Qeyd: robots.txt giriş nəzarəti deyil; məxfi məlumatları qorumaq üçün istifadə olunmamalıdır.")
+            say("robots.txt was not found or the server did not return a successful response.")
+        say("Note: robots.txt is not access control; it should not be used to protect sensitive information.")
     except requests.RequestException as exc:
-        say(f"robots.txt sorğusu alınmadı: {exc}")
+        say(f"robots.txt request failed: {exc}")
 
 
 class PageParser(HTMLParser):
@@ -421,7 +421,7 @@ def public_email_gathering() -> None:
     parsed_start = urlparse(start_url)
     allowed_host = parsed_start.hostname
     if not allowed_host:
-        say("Düzgün host müəyyən edilmədi.")
+        say("Could not determine a valid host.")
         return
     session = make_session()
     queue = deque([start_url])
@@ -453,15 +453,15 @@ def public_email_gathering() -> None:
                     queue.append(normalized)
         except requests.RequestException:
             continue
-    print(f"\nZiyarət edilən səhifələr: {len(visited)}")
-    print(f"Tapılan unikal ictimai e-poçt ünvanları: {len(emails)}")
+    print(f"\nPages visited: {len(visited)}")
+    print(f"Unique public email addresses found: {len(emails)}")
     for email in sorted(emails):
         print(f"  {email}")
-    say("Qeyd: nəticə tapılmaması saytda e-poçt olmadığına sübut deyil.")
+    say("Note: finding nothing does not prove there are no email addresses on the site.")
 
 
 def passive_subdomain_discovery() -> None:
-    host = ask_target("Əsas domen daxil edin (məs. example.com): ")
+    host = ask_target("Enter the base domain (e.g. example.com): ")
     if not host:
         return
     # crt.sh query is passive Certificate Transparency lookup.
@@ -472,13 +472,13 @@ def passive_subdomain_discovery() -> None:
             timeout=12,
         )
         if response.status_code in (502, 503, 504):
-            say("Xarici xidmət hazırda əlçatan deyil, sonra yenidən cəhd edin.")
+            say("The external service is currently unavailable, please try again later.")
             return
         response.raise_for_status()
         try:
             data = response.json()
         except (requests.JSONDecodeError, ValueError):
-            say("Xarici xidmət gözlənilməyən cavab qaytardı, sonra yenidən cəhd edin.")
+            say("The external service returned an unexpected response, please try again later.")
             return
         found = set()
         for item in data if isinstance(data, list) else []:
@@ -489,21 +489,21 @@ def passive_subdomain_discovery() -> None:
                     if "*" not in name and " " not in name:
                         found.add(name)
         if found:
-            print(f"\nTapılan unikal subdomenlər ({len(found)}):")
+            print(f"\nUnique subdomains found ({len(found)}):")
             for name in sorted(found):
                 print(f"  {name}")
         else:
-            say("Bu sorğu üzrə subdomen tapılmadı. Bu, subdomenlərin mövcud olmadığına zəmanət vermir.")
+            say("No subdomains found for this query. This does not guarantee that none exist.")
     except (requests.ConnectionError, requests.Timeout):
-        say("Xarici xidmət hazırda əlçatan deyil, sonra yenidən cəhd edin.")
+        say("The external service is currently unavailable, please try again later.")
     except requests.HTTPError as exc:
-        status = exc.response.status_code if exc.response is not None else "naməlum"
+        status = exc.response.status_code if exc.response is not None else "unknown"
         if status in (502, 503, 504):
-            say("Xarici xidmət hazırda əlçatan deyil, sonra yenidən cəhd edin.")
+            say("The external service is currently unavailable, please try again later.")
         else:
-            say(f"Xarici xidmət HTTP xətası qaytardı ({status}); sonra yenidən cəhd edin.")
+            say(f"The external service returned an HTTP error ({status}); please try again later.")
     except requests.RequestException:
-        say("Xarici xidmət hazırda əlçatan deyil, sonra yenidən cəhd edin.")
+        say("The external service is currently unavailable, please try again later.")
 
 
 def normalize_body(text: str) -> str:
@@ -533,11 +533,11 @@ def admin_path_check() -> None:
         home_hash = hashlib.sha256(home_body.encode("utf-8", errors="ignore")).hexdigest()
         home_title = get_page_title(home.text)
     except requests.RequestException as exc:
-        say(f"Əsas səhifəyə sorğu alınmadı: {exc}")
+        say(f"The request to the home page failed: {exc}")
         return
 
-    print("\nAdmin/giriş yollarının ilkin yoxlanması:")
-    print("Qeyd: yalnız GET sorğuları göndərilir; giriş cəhdi və parol sınağı aparılmır.")
+    print("\nPreliminary check of admin/login paths:")
+    print("Note: only GET requests are sent; no login attempts or password tests are made.")
     for path in ADMIN_PATHS:
         target = urljoin(root, path.lstrip("/"))
         try:
@@ -548,26 +548,26 @@ def admin_path_check() -> None:
             final_url = response.url
             same_as_home = body_hash == home_hash or (title and title == home_title and len(body) > 0)
             if same_as_home and response.status_code == 200:
-                note = "200, lakin əsas səhifə ilə eyni/oxşar cavab — soft-404 ola bilər"
+                note = "200, but same/similar response as the home page — may be a soft-404"
             elif response.status_code in (301, 302, 303, 307, 308):
-                note = f"yönləndirmə → {final_url}"
+                note = f"redirect → {final_url}"
             elif response.status_code == 200:
-                note = "200 — ayrıca səhifə cavabı; giriş səhifəsi olduğunu təsdiqləmir"
+                note = "200 — a separate page response; does not confirm it is a login page"
             elif response.status_code == 404:
-                note = "404 — tapılmadı"
+                note = "404 — not found"
             else:
                 note = f"HTTP {response.status_code}"
             print(f"  {path:<20} {note}")
         except requests.RequestException as exc:
-            print(f"  {path:<20} sorğu alınmadı ({type(exc).__name__})")
-    say("Nəticə: HTTP statusu təkbaşına admin panelinin mövcudluğunu və ya zəifliyi sübut etmir.")
+            print(f"  {path:<20} request failed ({type(exc).__name__})")
+    say("Result: an HTTP status alone does not prove that an admin panel exists or is vulnerable.")
 
 
 def main() -> None:
     while True:
         banner()
         menu()
-        choice = input("Seçiminizi daxil edin (1-11): ").strip()
+        choice = input("Enter your choice (1-11): ").strip()
         actions = {
             "1": dns_lookup,
             "2": whois_lookup,
@@ -581,25 +581,25 @@ def main() -> None:
             "10": admin_path_check,
         }
         if choice == "11":
-            say("TARANTULA-dan istifadə etdiyiniz üçün təşəkkürlər. Sağ olun!")
+            say("Thank you for using TARANTULA. Goodbye!")
             break
         action = actions.get(choice)
         if action:
             try:
                 action()
             except KeyboardInterrupt:
-                say("\nƏməliyyat istifadəçi tərəfindən dayandırıldı.")
+                say("\nOperation interrupted by the user.")
             except Exception as exc:
                 # Last-resort guard keeps the CLI alive without hiding the error.
-                say(f"Gözlənilməz xəta: {type(exc).__name__}: {exc}")
+                say(f"Unexpected error: {type(exc).__name__}: {exc}")
         else:
-            say("Yanlış seçim. 1-11 aralığında seçim edin.")
-        input("\nDavam etmək üçün Enter düyməsini basın...")
+            say("Invalid choice. Please choose a number between 1 and 11.")
+        input("\nPress Enter to continue...")
 
 
 if __name__ == "__main__":
     try:
         main()
     except KeyboardInterrupt:
-        print("\nTARANTULA bağlandı.")
+        print("\nTARANTULA closed.")
         sys.exit(0)
