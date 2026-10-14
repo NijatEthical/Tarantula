@@ -44,7 +44,7 @@ python -m pip install -r requirements.txt
 Run the application:
 
 ```bash
-python gray_mask.py
+python Tarantula.py.py
 ```
 
 Choose an option from the interactive terminal menu.
