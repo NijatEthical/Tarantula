@@ -6,9 +6,7 @@ TARANTULA is a command-line tool I built to learn cybersecurity fundamentals. It
 
 > **For authorized testing only.** Use it only on systems you own or have explicit written permission to assess.
 
-<!-- Add a screenshot of the banner and menu here:
-![TARANTULA screenshot](screenshots/tarantula.png)
--->
+  ![TARANTULA screenshot](tarantula.png)
 
 ## Features
 
