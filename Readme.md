@@ -79,5 +79,5 @@ The author is not responsible for misuse of this software. Users are responsible
 
 ## Author
 
-**Project:** N1jat Cyb3r 
+**Project:** Nijat Ethical 
 **Category:** Cybersecurity / Python / Reconnaissance
