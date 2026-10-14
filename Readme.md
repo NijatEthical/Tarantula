@@ -1,4 +1,4 @@
-# GRAY MASK ⚓
+# Nijat Ethical ⚓
 
 **A Python-based Cybersecurity Reconnaissance Toolkit**
 
